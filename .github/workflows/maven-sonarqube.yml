@@ -22,9 +22,9 @@ jobs:
 
     - name: Build + SonarQube analysis
       run: >
-        mvn clean verify sonar:sonar \
-        -Dsonar.projectKey=my-project \
-        -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+        mvn clean verify sonar:sonar 
+        -Dsonar.projectKey=my-project 
+        -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} 
         -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
     - name: Wait for SonarQube processing
@@ -38,7 +38,7 @@ jobs:
       run: |
         echo "Fetching issues from SonarQube..."
 
-        ISSUES=$(curl -s -u $SONAR_TOKEN: \
+        ISSUES=$(curl -s -u $SONAR_TOKEN: 
         "$SONAR_HOST_URL/api/issues/search?types=VULNERABILITY,BUG&statuses=OPEN")
 
         echo "$ISSUES" > issues.json
