@@ -1,0 +1,80 @@
+name: SonarQube Detailed Issue Reporter
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  sonar-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run Maven Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B verify sonar:sonar \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+          -Dsonar.login=$SONAR_TOKEN
+
+      - name: Wait for Sonar Processing
+        run: sleep 30
+
+      - name: Fetch Specific Sonar Issues
+        id: fetch_issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          URL: ${{ secrets.SONAR_HOST_URL }}
+          KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: |
+          # Fetch the top 5 unresolved issues (Bugs, Vulnerabilities, Code Smells)
+          # We filter for 'resolved=false' to get only active issues
+          RAW_ISSUES=$(curl -s -u "$SONAR_TOKEN:" "$URL/api/issues/search?componentKeys=$KEY&resolved=false&ps=5")
+          
+          # Check if there are any issues
+          ISSUE_COUNT=$(echo $RAW_ISSUES | jq '.total')
+          echo "total_issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            # Format the issues into a Markdown string for the GitHub Issue body
+            # It extracts: Message, Component (File), Line, Severity, and Effort
+            FORMATTED_BODY=$(echo $RAW_ISSUES | jq -r '.issues[] | "### 🔴 \(.message)\n- **File:** \(.component)\n- **Line:** \(.line // "N/A")\n- **Severity:** \(.severity)\n- **Effort to fix:** \(.effort)\n- **Rule:** \(.rule)\n\n---\n"')
+            
+            # Use a delimiter to handle multi-line strings in GITHUB_OUTPUT
+            echo "issue_details<<EOF" >> $GITHUB_OUTPUT
+            echo "$FORMATTED_BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Detailed GitHub Issue
+        if: steps.fetch_issues.outputs.total_issues > 0
+        uses: imjohnbo/github-action-issue@v2
+        with:
+          title: "🚨 SonarQube Analysis: ${{ steps.fetch_issues.outputs.total_issues }} Issues Found"
+          labels: "sonar-report, quality-check"
+          body: |
+            ## Analysis Summary
+            SonarQube has identified the following specific issues in your latest code push. Please address these to maintain software quality.
+
+            ${{ steps.fetch_issues.outputs.issue_details }}
+
+            ### ✅ How to solve:
+            1. Open the [SonarQube Issues Dashboard](${{ secrets.SONAR_HOST_URL }}/project/issues?id=${{ secrets.SONAR_PROJECT_KEY }}&resolved=false) for full details.
+            2. Follow the naming conventions or refactoring suggestions listed above.
+            3. Once fixed and pushed, SonarQube will automatically close these issues.
+          token: ${{ secrets.GITHUB_TOKEN }}
