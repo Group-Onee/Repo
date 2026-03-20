@@ -63,7 +63,7 @@ jobs:
 
       - name: Create Detailed GitHub Issue
         if: steps.fetch_issues.outputs.total_issues > 0
-        uses: imjohnbo/github-action-issue@v2
+        uses: imjohnbo/issue-bot@v3
         with:
           title: "🚨 SonarQube Analysis: ${{ steps.fetch_issues.outputs.total_issues }} Issues Found"
           labels: "sonar-report, quality-check"
