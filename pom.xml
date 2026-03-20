@@ -1,40 +1,23 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.example</groupId>
-  <artifactId>Repo</artifactId>
+  <groupId>com.aaron.dev</groupId>
+  <artifactId>sonar-automated-reporter</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <sonar.projectKey>Group-Onee_Repo_40df89f2-62cc-4356-a1b3-1dcd3389d0ef</sonar.projectKey>
-    <sonar.projectName>Repos</sonar.projectName>
-    <sonar.host.url>http://localhost:9000</sonar.host.url>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <build>
     <plugins>
-      <!-- Maven Compiler Plugin -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-        </configuration>
-      </plugin>
-
-      <!-- Sonar Maven Plugin -->
-      <plugin>
-         <groupId>org.sonarsource.scanner.maven</groupId>
-         <artifactId>sonar-maven-plugin</artifactId>
-         <version>3.10.0.2594</version>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>3.10.0.2594</version>
       </plugin>
     </plugins>
   </build>
